@@ -1,0 +1,87 @@
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+import xlrd
+import xlsxwriter
+import openpyxl
+#main code 
+
+#reading the excel file
+
+dataML= pd.read_excel('MLdata.xlsx')
+dataMB= pd.read_excel('MBdata.xlsx')
+nrow=0
+# making a new excel file 
+outWorkbook = xlsxwriter.Workbook("out.xlsx") 
+outsheet = outWorkbook.add_worksheet()
+outsheet.write("A1", "EVENTID")
+outsheet.write("B1", "MAG(MB)")
+outsheet.write("C1", "MAG(ML)")
+
+#accessing the coloumn wise data
+event_ML=np.array([dataML['EVENTID']],int)
+event_MB=np.array([dataMB['EVENTID']],int)
+MAG_ML= np.array([dataML['MAG']],float)
+MAG_MB= np.array([dataMB['MAG']],float)
+
+
+#looping for checking comman events
+for i in range(0,event_MB.size):
+	 a= event_MB[0,i]
+	 for j in range(event_ML.size):
+	 	b= event_ML[0,j]
+	 	if(a==b):
+	 		nrow = nrow+1
+	 		outsheet.write(nrow,0,a)
+	 		mb= MAG_MB[0,i]
+	 		x=round(mb,1)
+	 		outsheet.write(nrow,1,x)
+	 		ml=MAG_ML[0,j]
+	 		y=round(ml,1)
+	 		outsheet.write(nrow,2,y)	 		
+
+
+outWorkbook.close()
+
+#graph of mb vs ml
+data= pd.read_excel('out.xlsx')
+
+x_axis=np.array([data['MAG(MB)']],float)
+y_axis=np.array([data['MAG(ML)']],float)
+
+plt.scatter(x_axis[0], y_axis[0])
+plt.xlabel('MB')
+plt.ylabel('ML')
+plt.xlim([2, 8])
+plt.ylim([2, 8])
+#plt.plot(x_axis[0], y_axis[0])
+plt.show()
+
+
+# Gutenberg plot
+data= pd.read_excel('out.xlsx')
+out_MB= np.array([data['MAG(ML)']],float)
+out_ML= np.array([data['MAG(MB)']],float)
+np.sort(out_MB)
+
+
+unique_elements, counts_elements = np.unique(out_MB, return_counts=True)
+
+y=np.asarray((unique_elements, counts_elements))
+
+#unique_elements, counts_elements = np.unique(out_ML, return_counts=True)
+
+#MBdata=np.asarray((unique_elements, counts_elements))
+
+x_axis=y[0,:]
+y_axis=y[1,:]
+
+#xaxis=MBdata[0,:]
+#yaxis=MBdata[1,:]
+
+plt.plot(x_axis,y_axis)
+#plt.plot(xaxis,yaxis)
+plt.semilogy(basey=10)
+plt.xlabel("Magnitude(MB)")
+plt.ylabel("Log(No. of earthquakes)")
+plt.show()
